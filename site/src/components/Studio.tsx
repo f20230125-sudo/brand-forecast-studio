@@ -3,18 +3,38 @@
 import { useState } from "react";
 import { clamp, LIMITS, runScenario, type ScenarioInput } from "@/lib/scenario";
 import type { Brand, Dataset } from "@/lib/types";
-import { pct, signedUsd, usd } from "@/lib/format";
+import { pct, signedPct, signedUsd, usd } from "@/lib/format";
+import { Ask } from "./Ask";
+import { BuChart, type BuRow } from "./BuChart";
 import { ForecastChart } from "./ForecastChart";
-import { useView } from "./chart";
+import { Frame, useView } from "./chart";
 import { ThemeToggle } from "./ThemeToggle";
 
 const SECTIONS = [
   { id: "forecast", label: "Forecast" },
+  { id: "units", label: "Business units" },
+  { id: "ask", label: "Ask" },
   { id: "accuracy", label: "Accuracy" },
   { id: "health", label: "Pipeline health" },
   { id: "method", label: "Method" },
 ];
 const METHOD_LABEL: Record<string, string> = { model: "Model", naive: "Last quarter", seasonal_naive: "Same quarter last year", drift: "Recent trend" };
+// Plain names for the model's inputs, for the "what the model leans on" line.
+const FEATURE_LABEL: Record<string, string> = {
+  g4: "growth over the last four quarters",
+  g1: "growth last quarter",
+  age: "quarters since launch",
+  h: "quarters ahead",
+  mean4: "average units over the last four quarters",
+  price_g4: "price trend over a year",
+  target_q: "quarter of the year",
+  area_code: "therapy area",
+  lag0: "units in the latest quarter",
+  lag1: "units one quarter earlier",
+  lag2: "units two quarters earlier",
+  lag3: "units three quarters earlier",
+};
+const CAL_START = "2024Q4";
 const STATUS_WORD = { pass: "Pass", warn: "Review", fail: "Fail", info: "Info" } as const;
 
 function StatusGlyph({ s }: { s: keyof typeof STATUS_WORD }) {
@@ -47,6 +67,7 @@ export function Studio({ data, repoUrl }: { data: Dataset; repoUrl?: string }) {
   const baseTotal = result.reduce((a, q) => a + q.base_spend, 0);
   const scenTotal = result.reduce((a, q) => a + q.spend, 0);
   const [view, setView] = useView("chart");
+  const [buView, setBuView] = useView("chart");
 
   const msdAll = backtest.summary.find((r) => r.scope === "MSD brands" && r.horizon === "all")!;
   const allAll = backtest.summary.find((r) => r.scope === "All brands" && r.horizon === "all")!;
@@ -54,6 +75,15 @@ export function Studio({ data, repoUrl }: { data: Dataset; repoUrl?: string }) {
   const wins = backtest.byBrand.filter((r) => r.best === "model").length;
   const total2026 = brands.reduce((a, b) => a + b.forecast.reduce((x, f) => x + f.p50, 0), 0);
   const total2025 = brands.reduce((a, b) => a + b.history.filter((p) => p.q.startsWith("2025")).reduce((x, p) => x + p.spend, 0), 0);
+  const year = (b: Brand, y: string) => b.history.filter((p) => p.q.startsWith(y)).reduce((x, p) => x + p.spend, 0);
+  const fc = (b: Brand) => b.forecast.reduce((x, f) => x + f.p50, 0);
+  const buRows: BuRow[] = bus.map((u) => {
+    const bs = brands.filter((b) => b.bu === u);
+    const f = bs.reduce((a, b) => a + fc(b), 0);
+    return { bu: u, brands: bs.length, y2025: bs.reduce((a, b) => a + year(b, "2025"), 0), y2026: f, scenario: changed && u === brand.bu ? f - baseTotal + scenTotal : null };
+  });
+  const cal = (h: string) => backtest.calibration.find((r) => r.scope === "MSD brands" && r.horizon === h);
+  const calAll = cal("all")!;
   const counts = health.reduce<Record<string, number>>((a, c) => ({ ...a, [c.status]: (a[c.status] ?? 0) + 1 }), {});
 
   const pickBu = (v: string) => {
@@ -65,6 +95,12 @@ export function Studio({ data, repoUrl }: { data: Dataset; repoUrl?: string }) {
   const pickBrand = (v: string) => {
     setName(v);
     setS(defaults(brands.find((b) => b.brand === v)!));
+  };
+  const openScenario = (x: { brand: string; bu: string; input: ScenarioInput }) => {
+    setBu(x.bu);
+    setName(x.brand);
+    setS(x.input);
+    document.getElementById("forecast")?.scrollIntoView({ block: "start" });
   };
 
   return (
@@ -99,7 +135,8 @@ export function Studio({ data, repoUrl }: { data: Dataset; repoUrl?: string }) {
           <p className="lede">
             One machine-learning model, trained across {meta.panelBrands} brands, forecasts each brand&rsquo;s units four quarters ahead; price per unit follows the brand&rsquo;s own recent trend. Tested on rolling
             origins from {backtest.origins[0]} to {backtest.origins[1]}, it misses MSD brands&rsquo; spend by {pct(msdAll.model, 1)} on average, against {pct(bestBase(msdAll), 1)} for the best simple baseline, and
-            wins on {wins} of {backtest.byBrand.length} brands. Change price, volume or a generic launch below and the forecast moves with it.
+            wins on {wins} of {backtest.byBrand.length} brands. Its P10 to P90 range is calibrated, and held the actual {pct(calAll.coverage_calibrated)} of the time on quarters the calibration had not
+            seen. Change price, volume or a generic launch below and the forecast moves with it, or ask a question in plain words.
           </p>
         </section>
 
@@ -288,6 +325,98 @@ export function Studio({ data, repoUrl }: { data: Dataset; repoUrl?: string }) {
           </figure>
         </section>
 
+        <section className="sec" id="units" aria-labelledby="units-h">
+          <div className="sec-head">
+            <h2 id="units-h">
+              By business unit: {buRows.filter((r) => r.y2026 > r.y2025).length} of {buRows.length} grow in 2026
+            </h2>
+            <p className="dek">
+              Each unit&rsquo;s total is the sum of its brands&rsquo; forecasts. Ranges are left out here: single brands&rsquo; P10s do not add up to a P10 for the unit. A scenario built above shows as a yellow mark
+              on its unit.
+            </p>
+          </div>
+          <Frame
+            title="US Medicaid spend by business unit, 2025 actual and 2026 forecast"
+            sub="Before rebates. Outlined bar: 2025; solid bar: the 2026 forecast (P50)."
+            view={buView}
+            onView={setBuView}
+            legend={
+              <p className="legend">
+                <span>
+                  <i className="sq o" /> 2025 actual
+                </span>{" "}
+                <span>
+                  <i className="sq" /> 2026 forecast
+                </span>{" "}
+                {changed && (
+                  <span>
+                    <i style={{ width: 0, height: 12, border: 0, borderLeft: "2.5px solid var(--cell-rule)", verticalAlign: -1 }} /> 2026, your scenario
+                  </span>
+                )}
+              </p>
+            }
+            table={
+              <table className="tbl">
+                <caption className="sr-only">US Medicaid spend by business unit</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Business unit</th>
+                    <th scope="col" className="n">
+                      Brands
+                    </th>
+                    <th scope="col" className="n">
+                      2025 actual
+                    </th>
+                    <th scope="col" className="n">
+                      2026 forecast
+                    </th>
+                    <th scope="col" className="n">
+                      Change
+                    </th>
+                    <th scope="col" className="n">
+                      Your scenario
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {buRows.map((r) => (
+                    <tr key={r.bu}>
+                      <th scope="row">{r.bu}</th>
+                      <td className="n">{r.brands}</td>
+                      <td className="n">{usd(r.y2025)}</td>
+                      <td className="n">{usd(r.y2026)}</td>
+                      <td className="n">{signedPct(r.y2026 / r.y2025 - 1)}</td>
+                      <td className="n">{r.scenario == null ? "" : usd(r.scenario)}</td>
+                    </tr>
+                  ))}
+                  <tr className="tot">
+                    <th scope="row">All</th>
+                    <td className="n">{brands.length}</td>
+                    <td className="n">{usd(total2025)}</td>
+                    <td className="n">{usd(total2026)}</td>
+                    <td className="n">{signedPct(total2026 / total2025 - 1)}</td>
+                    <td className="n">{changed ? usd(total2026 - baseTotal + scenTotal) : ""}</td>
+                  </tr>
+                </tbody>
+              </table>
+            }
+            source={<>Source: CMS State Drug Utilization Data via Rx Market Pulse. Business units as grouped in this study, not MSD&rsquo;s own reporting lines.</>}
+          >
+            <BuChart rows={buRows} />
+          </Frame>
+        </section>
+
+        <section className="sec" id="ask" aria-labelledby="ask-h">
+          <div className="sec-head">
+            <h2 id="ask-h">Ask the forecast</h2>
+            <p className="dek">
+              Each question becomes one call to a typed tool (forecast, scenario, business-unit total, accuracy, ranking, health, range), and the answer comes only from the numbers on this page. The tool call is shown
+              under the answer. A question it cannot place is declined rather than guessed. It runs in this page, with no language model and nothing sent anywhere.
+            </p>
+          </div>
+          <Ask data={data} onOpen={openScenario} />
+        </section>
+
         <section className="sec" id="accuracy" aria-labelledby="accuracy-h">
           <div className="sec-head">
             <h2 id="accuracy-h">
@@ -296,7 +425,7 @@ export function Studio({ data, repoUrl }: { data: Dataset; repoUrl?: string }) {
             <p className="dek">
               Each origin from {backtest.origins[0]} to {backtest.origins[1]} trains only on what was known then and forecasts one to four quarters ahead. The miss is weighted absolute percentage error (WAPE):
               total absolute error over total actual spend. Across all {meta.panelBrands} brands the model misses by {pct(allAll.model, 1)}, against {pct(bestBase(allAll), 1)}. It is not best everywhere, and the
-              table says where.
+              table says where. The last two columns count forecasts made from {CAL_START} on, which the range&rsquo;s calibration had not seen; four quarters ahead has none yet for MSD brands.
             </p>
           </div>
           <div className="tbl-wrap" tabIndex={0} role="region" aria-label="Backtest by horizon: table">
@@ -311,7 +440,10 @@ export function Studio({ data, repoUrl }: { data: Dataset; repoUrl?: string }) {
                     </th>
                   ))}
                   <th scope="col" className="n">
-                    Actual inside P10 to P90
+                    Inside the range, raw
+                  </th>
+                  <th scope="col" className="n">
+                    Inside, calibrated
                   </th>
                 </tr>
               </thead>
@@ -326,7 +458,8 @@ export function Studio({ data, repoUrl }: { data: Dataset; repoUrl?: string }) {
                           {pct(r[k], 1)}
                         </td>
                       ))}
-                      <td className="n">{pct(r.interval_coverage)}</td>
+                      <td className="n">{pct(cal(r.horizon)?.coverage_raw)}</td>
+                      <td className="n">{pct(cal(r.horizon)?.coverage_calibrated)}</td>
                     </tr>
                   ))}
               </tbody>
@@ -402,11 +535,24 @@ export function Studio({ data, repoUrl }: { data: Dataset; repoUrl?: string }) {
               unit follows each brand&rsquo;s own trend over the last year, capped at about 5% a quarter. Spend is units times price.
             </li>
             <li>
+              <b>Range.</b> The quantile models&rsquo; P10 to P90 band held the actual only {pct(calAll.coverage_raw)} of the time for MSD brands. It is calibrated by conformal prediction: each band is widened by
+              how far earlier actuals at the same horizon fell outside theirs, measured separately for MSD&rsquo;s brands and the rest, and only from quarters already known when the forecast was made. On {calAll.n}{" "}
+              MSD forecasts the calibration had not seen it holds {pct(calAll.coverage_calibrated)}; the median band widens from {pct(calAll.median_width_raw)} to {pct(calAll.median_width_calibrated)} above P10.
+            </li>
+            <li>
+              <b>What the model leans on.</b> Share of the final model&rsquo;s split gain:{" "}
+              {backtest.importance
+                .slice(0, 5)
+                .map((f) => `${FEATURE_LABEL[f.feature] ?? f.feature} ${pct(f.share)}`)
+                .join("; ")}
+              . Recent growth counts for more than the level, so a brand that turns sharply is where it misses most.
+            </li>
+            <li>
               <b>Baselines.</b> Last quarter&rsquo;s value, the same quarter last year, and the recent trend (capped at about 25% a quarter). Same price path for every method, so the comparison is about volume.
             </li>
             <li>
-              <b>Limits.</b> US Medicaid only, before manufacturer rebates: not MSD revenue, not the GCC. Vaccines are not in this data. The P10 to P90 band held the actual {pct(msdAll.interval_coverage)} of the time for
-              MSD brands, below the 80% it is named for, so read it as a narrow range. An independent case study, not produced or endorsed by MSD.
+              <b>Limits.</b> US Medicaid only, before manufacturer rebates: not MSD revenue, not the GCC. Vaccines are not in this data. The calibrated range is checked on {calAll.n} MSD forecasts, so its coverage
+              is known to within a few points, not exactly. The assistant answers only what its tools cover. An independent case study, not produced or endorsed by MSD.
             </li>
           </ul>
         </section>
