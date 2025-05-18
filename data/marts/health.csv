@@ -10,6 +10,6 @@ H08,Latest price per unit moved less than 25%,warn,BRIDION (-42%),|change| <= 25
 H09,"Feature drift: quarter-on-quarter growth, 2025 vs 2019-2023",pass,PSI 0.049,"PSI < 0.10 pass, < 0.25 warn"
 H10,Model beats the best baseline on MSD brands,pass,WAPE 17.9% vs 19.4%,model WAPE below every baseline
 H11,Brands where the model loses to last-quarter's value,warn,"9 of 19: DELSTRIGO, PIFELTRO, BRIDION, DIFICID, EMEND, RECARBRIO, SIVEXTRO, BELSOMRA, KEYTRUDA",flag for review; more than a third is a warn
-H12,P10-P90 interval holds the actual about 80% of the time,warn,68%,between 70% and 90%
+H12,Calibrated P10-P90 range holds the actual about 80% of the time,pass,80% on 152 MSD forecasts the calibration had not seen (70% before),between 70% and 90%
 H13,2026 forecast within 60% of 2025 spend,warn,"DIFICID (-63%), WINREVAIR (+89%)",|2026 / 2025 - 1| <= 60%; launches and losses of exclusivity explain most exceptions
 H14,A forecast for every MSD brand,pass,19 brands,every MSD brand in the panel
