@@ -32,7 +32,7 @@ Rx Market Pulse warehouse (36.1M rows) ──> bf.extract ──> 13,336 brand-q
 
 ## Pipeline health (latest run)
 
-9 pass, 4 need review, 0 fail, 1 for information. The reviews are real: Dificid's latest volume fell far outside its normal range, Bridion's price per unit fell 42% in a quarter, the model loses to last quarter's value for 9 of 19 brands, and the interval coverage is 68%.
+8 pass, 5 need review, 0 fail, 1 for information. The reviews are real: Dificid's latest volume fell far outside its normal range, Bridion's price per unit fell 42% in a quarter, the model loses to last quarter's value for 9 of 19 brands, the interval coverage is 68%, and two 2026 forecasts move more than 60% from 2025 (Dificid down 63%, Winrevair up 89% as it ramps).
 
 ## Run it
 
