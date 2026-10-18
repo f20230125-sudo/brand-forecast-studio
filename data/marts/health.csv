@@ -1,0 +1,15 @@
+id,check,status,result,rule
+H01,Latest quarter loaded,pass,2025Q4,at least 2025Q4
+H02,Extract never exceeds the source,pass,0 quarters above 100%,"panel spend <= source brand spend, every quarter"
+H03,Share of brand spend the panel covers,info,74.1% to 95.4% by quarter,"brands >= $20M in 2025, MSD >= $2M"
+H04,No negative units or spend,pass,0 rows,0
+H05,Every MSD brand has an unbroken series,pass,"19 brands, gaps: none",no missing quarter after launch
+H06,Every MSD brand sold in the latest quarter,pass,all sold,units > 0 in the latest quarter
+H07,Latest volume change is within the brand's normal range,warn,DIFICID (z -4.5),|z| <= 3 for the latest quarter-on-quarter change
+H08,Latest price per unit moved less than 25%,warn,BRIDION (-42%),|change| <= 25% quarter on quarter
+H09,"Feature drift: quarter-on-quarter growth, 2025 vs 2019-2023",pass,PSI 0.049,"PSI < 0.10 pass, < 0.25 warn"
+H10,Model beats the best baseline on MSD brands,pass,WAPE 17.9% vs 19.4%,model WAPE below every baseline
+H11,Brands where the model loses to last-quarter's value,warn,"9 of 19: DELSTRIGO, PIFELTRO, BRIDION, DIFICID, EMEND, RECARBRIO, SIVEXTRO, BELSOMRA, KEYTRUDA",flag for review; more than a third is a warn
+H12,P10-P90 interval holds the actual about 80% of the time,warn,68%,between 70% and 90%
+H13,2026 forecast within 60% of 2025 spend,warn,"DIFICID (-63%), WINREVAIR (+89%)",|2026 / 2025 - 1| <= 60%; launches and losses of exclusivity explain most exceptions
+H14,A forecast for every MSD brand,pass,19 brands,every MSD brand in the panel
