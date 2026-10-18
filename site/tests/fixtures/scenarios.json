@@ -1,0 +1,182 @@
+[
+ {
+  "input": {
+   "brand": "JANUVIA",
+   "price_change_pct": 0.0,
+   "volume_change_pct": 0.0,
+   "start_quarter": "2026Q1",
+   "generic_entry_quarter": null
+  },
+  "quarters": [
+   {
+    "quarter": "2026Q1",
+    "spend": 63442000.12489281,
+    "price_effect": 0.0,
+    "volume_effect": 0.0
+   },
+   {
+    "quarter": "2026Q2",
+    "spend": 58393371.548996285,
+    "price_effect": 0.0,
+    "volume_effect": 0.0
+   },
+   {
+    "quarter": "2026Q3",
+    "spend": 55148122.04329725,
+    "price_effect": 0.0,
+    "volume_effect": 0.0
+   },
+   {
+    "quarter": "2026Q4",
+    "spend": 50300269.94507913,
+    "price_effect": 0.0,
+    "volume_effect": 0.0
+   }
+  ],
+  "delta_total": 0.0
+ },
+ {
+  "input": {
+   "brand": "JANUVIA",
+   "price_change_pct": -5.0,
+   "volume_change_pct": 0.0,
+   "start_quarter": "2026Q1",
+   "generic_entry_quarter": "2026Q3"
+  },
+  "quarters": [
+   {
+    "quarter": "2026Q1",
+    "spend": 60269900.11864816,
+    "price_effect": -3172100.006244648,
+    "volume_effect": 0.0
+   },
+   {
+    "quarter": "2026Q2",
+    "spend": 55473702.97154646,
+    "price_effect": -2919668.5774498186,
+    "volume_effect": 0.0
+   },
+   {
+    "quarter": "2026Q3",
+    "spend": 40141766.55409563,
+    "price_effect": -2112724.555478719,
+    "volume_effect": -12893630.933722902
+   },
+   {
+    "quarter": "2026Q4",
+    "spend": 28647261.24047119,
+    "price_effect": -1507750.5916037494,
+    "volume_effect": -20145258.113004193
+   }
+  ],
+  "delta_total": -42751132.77750403
+ },
+ {
+  "input": {
+   "brand": "KEYTRUDA",
+   "price_change_pct": 3.0,
+   "volume_change_pct": 8.0,
+   "start_quarter": "2026Q2",
+   "generic_entry_quarter": null
+  },
+  "quarters": [
+   {
+    "quarter": "2026Q1",
+    "spend": 208065541.94390053,
+    "price_effect": 0.0,
+    "volume_effect": 0.0
+   },
+   {
+    "quarter": "2026Q2",
+    "spend": 231891318.32028392,
+    "price_effect": 6754116.0675810855,
+    "volume_effect": 16676829.796496538
+   },
+   {
+    "quarter": "2026Q3",
+    "spend": 238065395.86327323,
+    "price_effect": 6933943.568833202,
+    "volume_effect": 17120848.318106677
+   },
+   {
+    "quarter": "2026Q4",
+    "spend": 233470476.90460095,
+    "price_effect": 6800110.977803922,
+    "volume_effect": 16790397.476059034
+   }
+  ],
+  "delta_total": 71076246.20488048
+ },
+ {
+  "input": {
+   "brand": "WINREVAIR",
+   "price_change_pct": 0.0,
+   "volume_change_pct": -20.0,
+   "start_quarter": "2026Q1",
+   "generic_entry_quarter": null
+  },
+  "quarters": [
+   {
+    "quarter": "2026Q1",
+    "spend": 71905623.60929497,
+    "price_effect": 0.0,
+    "volume_effect": -17976405.902323738
+   },
+   {
+    "quarter": "2026Q2",
+    "spend": 81730318.11515768,
+    "price_effect": 0.0,
+    "volume_effect": -20432579.52878942
+   },
+   {
+    "quarter": "2026Q3",
+    "spend": 95352616.12880725,
+    "price_effect": 0.0,
+    "volume_effect": -23838154.032201797
+   },
+   {
+    "quarter": "2026Q4",
+    "spend": 99955684.44503239,
+    "price_effect": 0.0,
+    "volume_effect": -24988921.11125808
+   }
+  ],
+  "delta_total": -87236060.57457304
+ },
+ {
+  "input": {
+   "brand": "ISENTRESS",
+   "price_change_pct": -10.0,
+   "volume_change_pct": 5.0,
+   "start_quarter": "2026Q1",
+   "generic_entry_quarter": "2026Q1"
+  },
+  "quarters": [
+   {
+    "quarter": "2026Q1",
+    "spend": 5922134.336757044,
+    "price_effect": -658014.9263063379,
+    "volume_effect": -1598927.7689976012
+   },
+   {
+    "quarter": "2026Q2",
+    "spend": 4549329.6253453,
+    "price_effect": -505481.0694828111,
+    "volume_effect": -2975390.178642814
+   },
+   {
+    "quarter": "2026Q3",
+    "spend": 3951945.2712145946,
+    "price_effect": -439105.03013495496,
+    "volume_effect": -3685335.6931501627
+   },
+   {
+    "quarter": "2026Q4",
+    "spend": 3403326.9339893237,
+    "price_effect": -378147.43710992474,
+    "volume_effect": -4030682.16458766
+   }
+  ],
+  "delta_total": -14271084.268412266
+ }
+]
