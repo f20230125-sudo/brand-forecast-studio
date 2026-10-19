@@ -1,0 +1,29 @@
+{
+  "note": "Written before the assistant's parser, and run once at the end. Not used to tune it. Each case names the tool the assistant must call and the arguments it must pass; 'none' means it must decline.",
+  "cases": [
+    { "q": "How much will Keytruda make next year?", "tool": "forecast", "args": { "brand": "KEYTRUDA" } },
+    { "q": "winrevair 2026 outlook", "tool": "forecast", "args": { "brand": "WINREVAIR" } },
+    { "q": "Give me the forecast range for Prevymis", "tool": "forecast", "args": { "brand": "PREVYMIS" } },
+    { "q": "What happens to Januvia if a generic comes in Q2?", "tool": "scenario", "args": { "brand": "JANUVIA", "generic_entry_quarter": "2026Q2" } },
+    { "q": "Janumet with a 10% price cut", "tool": "scenario", "args": { "brand": "JANUMET", "price_change_pct": -10 } },
+    { "q": "If Isentress volume drops 15 percent from 2026Q3, what is the impact?", "tool": "scenario", "args": { "brand": "ISENTRESS", "volume_change_pct": -15, "start_quarter": "2026Q3" } },
+    { "q": "Raise Welireg price by 4% and volume by 12%", "tool": "scenario", "args": { "brand": "WELIREG", "price_change_pct": 4, "volume_change_pct": 12 } },
+    { "q": "What is the HIV business unit forecast?", "tool": "bu_total", "args": { "bu": "HIV" } },
+    { "q": "total for oncology in 2026", "tool": "bu_total", "args": { "bu": "Oncology" } },
+    { "q": "How big is the hospital and specialty unit?", "tool": "bu_total", "args": { "bu": "Hospital & specialty" } },
+    { "q": "Show all business units", "tool": "bu_total", "args": {} },
+    { "q": "How accurate is the Belsomra forecast?", "tool": "accuracy", "args": { "brand": "BELSOMRA" } },
+    { "q": "Does the model beat the baselines?", "tool": "accuracy", "args": {} },
+    { "q": "What is the WAPE for Delstrigo?", "tool": "accuracy", "args": { "brand": "DELSTRIGO" } },
+    { "q": "Which brands grow fastest in 2026?", "tool": "rank", "args": { "by": "growth" } },
+    { "q": "Which brand declines the most?", "tool": "rank", "args": { "by": "decline" } },
+    { "q": "biggest brands by forecast spend", "tool": "rank", "args": { "by": "size" } },
+    { "q": "Did any health checks fail?", "tool": "health", "args": {} },
+    { "q": "What needs review before sharing the forecast?", "tool": "health", "args": {} },
+    { "q": "Can I trust the P10 to P90 range?", "tool": "range", "args": {} },
+    { "q": "how often does the actual land inside the band", "tool": "range", "args": {} },
+    { "q": "What is MSD's revenue in Saudi Arabia?", "tool": "none", "args": {} },
+    { "q": "Forecast Ozempic for 2026", "tool": "none", "args": {} },
+    { "q": "Write me a poem about forecasting", "tool": "none", "args": {} }
+  ]
+}

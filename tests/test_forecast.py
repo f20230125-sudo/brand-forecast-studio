@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from pydantic import ValidationError
 
-from bf import health, model, scenario
+from bf import calibrate, health, model, scenario
 
 
 @pytest.fixture(scope="module")
@@ -115,3 +115,36 @@ def test_health_has_no_failures():
     rows = health.checks()
     assert [r["id"] for r in rows if r["status"] == "fail"] == []
     assert len(rows) == 14
+
+
+def test_conformal_quantile_needs_the_finite_sample_correction():
+    e = np.arange(1, 11, dtype=float)  # n = 10: ceil(11 x 0.8) / 10 = 0.9 -> the 9th smallest
+    assert calibrate.q_level(e) == 9.0
+    assert calibrate.q_level(np.array([])) == 0.0
+
+
+def test_calibration_uses_only_quarters_known_at_the_origin():
+    # Two forecasts made at origin 2024Q1; earlier forecasts target 2023Q4 and 2024Q2. Only the first may count.
+    rows = [{"origin": "2023Q3", "target": "2023Q4", "h": 1, "owner": "X", "p10": 100.0, "p90": 120.0, "actual": 150.0}] * 50
+    rows += [{"origin": "2024Q1", "target": "2024Q2", "h": 1, "owner": "X", "p10": 100.0, "p90": 120.0, "actual": 1000.0}] * 50
+    bt = calibrate.calibrate_backtest(pd.DataFrame(rows))
+    later = bt[bt.origin == "2024Q1"].iloc[0]
+    assert later.Q == pytest.approx(math.log(150 / 120))  # from the 2023Q4 misses, not the much larger 2024Q2 ones
+    assert bt[bt.origin == "2023Q3"].Q.isna().all()  # nothing known yet: not calibrated
+
+
+def test_calibrated_coverage_is_near_80_percent_and_bands_only_widen():
+    cal = pd.read_csv(model.MARTS / "calibration.csv")
+    for scope in ("All brands", "MSD brands"):
+        r = cal[(cal.scope == scope) & (cal.horizon == "all")].iloc[0]
+        assert 0.75 <= r.coverage_calibrated <= 0.85
+        assert r.coverage_calibrated > r.coverage_raw
+    fc = pd.read_csv(model.MARTS / "forecast_2026.csv")
+    assert (fc.spend_p10 <= fc.spend_p10_raw + 1e-6).all() and (fc.spend_p90 >= fc.spend_p90_raw - 1e-6).all()
+    assert (fc.spend_p10 <= fc.spend_p50).all() and (fc.spend_p50 <= fc.spend_p90).all()
+
+
+def test_feature_importance_covers_every_feature():
+    imp = pd.read_csv(model.MARTS / "feature_importance.csv")
+    assert sorted(imp.feature) == sorted(model.FEATURES)
+    assert imp.gain_share.sum() == pytest.approx(1)

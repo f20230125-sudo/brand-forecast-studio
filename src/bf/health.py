@@ -97,8 +97,11 @@ def checks() -> list[dict]:
     bb = pd.read_csv(MARTS / "backtest_by_brand.csv")
     worse = bb[bb.model > bb.naive].brand.tolist()
     add("H11", "Brands where the model loses to last-quarter's value", "info" if len(worse) <= len(bb) // 3 else "warn", f"{len(worse)} of {len(bb)}: {', '.join(worse) or 'none'}", "flag for review; more than a third is a warn")
-    cov = float(m.interval_coverage)
-    add("H12", "P10-P90 interval holds the actual about 80% of the time", "pass" if 0.7 <= cov <= 0.9 else "warn", f"{cov:.0%}", "between 70% and 90%")
+    cal = pd.read_csv(MARTS / "calibration.csv")
+    c = cal[(cal.scope == "MSD brands") & (cal.horizon == "all")].iloc[0]
+    cov = float(c.coverage_calibrated)
+    add("H12", "Calibrated P10-P90 range holds the actual about 80% of the time", "pass" if 0.7 <= cov <= 0.9 else "warn",
+        f"{cov:.0%} on {int(c.n)} MSD forecasts the calibration had not seen ({float(c.coverage_raw):.0%} before)", "between 70% and 90%")
 
     # The forecast itself
     fc = pd.read_csv(MARTS / "forecast_2026.csv")
@@ -115,7 +118,7 @@ def checks() -> list[dict]:
     return out
 
 
-def main() -> None:
+def main() -> list[dict]:
     rows = checks()
     MARTS.mkdir(parents=True, exist_ok=True)
     with (MARTS / "health.csv").open("w", newline="", encoding="utf-8") as f:
@@ -124,6 +127,7 @@ def main() -> None:
         w.writerows(rows)
     for r in rows:
         print(f"{r['id']} {r['status']:5} {r['check']}: {r['result']}")
+    return rows
 
 
 if __name__ == "__main__":

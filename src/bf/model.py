@@ -237,6 +237,10 @@ def forecast(units, spend, price, inf) -> pd.DataFrame:
             rows.append({"brand": b, "bu": inf.bu.get(b, ""), "quarter": qlabel(t + h), "h": h, "price": p,
                          "units_p50": pu["p50"], "units_p10": pu["p10"], "units_p90": pu["p90"],
                          "spend_p50": pu["p50"] * p, "spend_p10": pu["p10"] * p, "spend_p90": pu["p90"] * p})
+    # What the final P50 model leans on: total gain from splits on each feature, as a share.
+    gain = models["p50"].booster_.feature_importance(importance_type="gain")
+    imp = pd.DataFrame({"feature": FEATURES, "gain_share": gain / gain.sum()}).sort_values("gain_share", ascending=False)
+    imp.to_csv(MARTS / "feature_importance.csv", index=False)
     return pd.DataFrame(rows)
 
 

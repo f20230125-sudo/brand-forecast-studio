@@ -43,10 +43,14 @@ def main() -> None:
     s = pd.read_csv(model.MARTS / "backtest_summary.csv")
     bb = pd.read_csv(model.MARTS / "backtest_by_brand.csv", keep_default_na=False)
     h = pd.read_csv(model.MARTS / "health.csv", keep_default_na=False)
+    cal = pd.read_csv(model.MARTS / "calibration.csv", dtype={"horizon": str})
+    imp = pd.read_csv(model.MARTS / "feature_importance.csv")
     (OUT / "backtest.json").write_text(json.dumps({
         "summary": [{k: (r(v, 4) if isinstance(v, float) else v) for k, v in row.items()} for row in s.to_dict("records")],
         "byBrand": [{k: (r(v, 4) if isinstance(v, float) else v) for k, v in row.items()} for row in bb.to_dict("records")],
         "origins": [f"{model.FIRST_ORIGIN[0]}Q{model.FIRST_ORIGIN[1]}", f"{model.LAST_ORIGIN[0]}Q{model.LAST_ORIGIN[1]}"],
+        "calibration": [{k: (None if v != v else r(v, 4)) if isinstance(v, float) else v for k, v in row.items()} for row in cal.to_dict("records")],
+        "importance": [{"feature": x.feature, "share": r(x.gain_share, 4)} for x in imp.itertuples()],
     }, separators=(",", ":")), encoding="utf-8")
     (OUT / "health.json").write_text(json.dumps(h.to_dict("records"), separators=(",", ":")), encoding="utf-8")
     (OUT / "meta.json").write_text(json.dumps({
