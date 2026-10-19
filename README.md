@@ -1,5 +1,7 @@
 # Brand Forecast Studio
 
+**Live:** https://brand-forecast-studio.vercel.app
+
 Quarterly sales forecasts for 19 MSD brands across six business units (Oncology, Diabetes, HIV, Hospital & specialty, Cardiovascular, Neuroscience), run as one monitored pipeline with a run log and a health check after every refresh, a calibrated forecast range, and a stakeholder page with a what-if for price, volume and generic entry, business-unit totals and a question box backed by typed tools.
 
 It mirrors what a Commercial Operations data science team does with internal sales: an automated forecasting pipeline, monitored, with a stakeholder-facing scenario tool. Here the sales are public: **US Medicaid spend from the CMS State Drug Utilization Data, 2019 Q1 to 2025 Q4**, cleaned in [Rx Market Pulse](https://github.com/f20230125-sudo/rx-market-pulse). It is not MSD revenue, not net of rebates, and not the GCC.
